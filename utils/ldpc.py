@@ -1,5 +1,6 @@
 import numpy as np
 from random import uniform
+from copy import deepcopy
 
 # define density to a constant value less than 1
 density = 0.5
@@ -72,8 +73,122 @@ def encode(H, message):
 
     return codeword
 
-def belief_propogation_decode(H, message):
-    pass
+# Computes matrix vector product modulo two
+def mat_vec_mul_mod2(M, v):
 
-def fuzzy_decode(H, message, max_iters = 1):
+    # Create the output vector
+    out_vec = np.zeros(M.shape[0], dtype=np.int8)
+    
+    # Compute matrix vector product
+    out_vec = M.dot(v)
+
+    # Compute modulo 2
+    for idx in range(M.shape[0]):
+        out_vec[idx] = out_vec[idx] % 2
+    
+    return out_vec
+
+# This decoder tries to decode LDPC encoded message by flipping bits which are in most number of failing parity check equations
+def fuzzy_decode(H, message, max_iters=1):
+   
+    # Tracks whether decoding was successful
+    success = False
+
+    # Create a local copy of message and start decoding
+    decoded_message = deepcopy(message)
+    for i in range(max_iters):
+
+        # Step 1: Find out which equations are failing
+        failures = mat_vec_mul_mod2(H, decoded_message)
+        
+        # Step 2: Collect the indices of equations which failed
+        failed = False
+        failure_idx = []
+        for idx, element in enumerate(failures):
+            if element == 1:
+                failed = True
+                failure_idx.append(idx)
+        
+        # Step 3: Check if decoding was successful and break if the code was successfully decoded
+        if not failed:
+            success = True
+            break
+        
+        # Step 4: Create a tally for how many times a bit was present in the failed equations
+        tally = [0 for x in range(H.shape[1])]
+        for idx in failure_idx:
+            for bit_idx, bit in enumerate(H[idx]):
+                if bit == 1:    # The bit at bit_idx was involved in the parity check
+                    tally[bit_idx] += 1
+
+        # Step 5: Find the bit which was involved in most number of failures
+        suspect = 0
+        max_count = -1
+        for idx, count in enumerate(tally):
+            if count >= max_count:
+                suspect = idx
+                max_count = count
+
+        # Step 6: Flip the suspect bit
+        decoded_message[suspect] = int(not decoded_message[suspect])
+
+    # Compute the number of message bits
+    message_bits = H.shape[1] - H.shape[0]
+    
+    # Extract the message bits and return them
+    return list(decoded_message[:message_bits]), success
+
+# This decoder tries to decode LDPC encoded message by flipping the bits in which are involved in ALL failing parity check equations
+def intersect_decode(H, message, max_iters=1):
+   
+    # Tracks whether decoding was successful
+    success = False
+
+    # Create a local copy of message and start decoding
+    decoded_message = deepcopy(message)
+    for i in range(max_iters):
+
+        # Step 1: Find out which equations are failing
+        failures = mat_vec_mul_mod2(H, decoded_message)
+        
+        # Step 2: Collect the indices of equations which failed
+        failed = False
+        failure_idx = []
+        for idx, element in enumerate(failures):
+            if element == 1:
+                failed = True
+                failure_idx.append(idx)
+        
+        # Step 3: Break if message was decoded correctly
+        if not failed:
+            success = True
+            break
+
+        # Step 4: Create the sets of bits involved in failing equations
+        sets = []
+        for idx in failure_idx:
+            bit_set = set([])
+            for bit_idx, bit in enumerate(H[idx]):
+                if bit == 1:    # The bit at bit_idx was involved in the parity check
+                    bit_set.add(bit_idx)
+            sets.append(bit_set)
+
+        # Step 5: Take intersection of sets
+        failed_bits = sets[0]
+        for s in sets:
+            failed_bits = failed_bits.intersection(s)
+
+        # Step 6: Flip the bits which were in all the failed equations
+        for idx in failed_bits:
+            decoded_message[idx] = int(not decoded_message[idx])
+
+    # Compute the number of message bits
+    message_bits = H.shape[1] - H.shape[0]
+    
+    # Extract the message bits and return them
+    print(decoded_message)
+    return list(decoded_message[:message_bits]), success
+
+# This decoder tries to decode LDPC encoded message by using belief propagation
+def belief_propogation_decode(H, message, snr, max_iters=1):
     pass
