@@ -1,7 +1,6 @@
 from matplotlib import pyplot as plt
 import argparse
 import math 
-import argparse
 
 # Plots a graph from a CSV file
 # The format of CSV is <x value>, <y value>, <label>
