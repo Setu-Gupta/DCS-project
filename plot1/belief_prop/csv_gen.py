@@ -2,18 +2,18 @@ import sys
 sys.path.append('../../utils')
 
 from ldpc import create_parity_matrix, encode, belief_propagation_decode
-from qpsk import transmit, apply_channel_noise, receive
+from qpsk import transmit, apply_channel_noise, receive, get_prob_single_bit_flip
 import numpy as np
 import random
 from math import log10, sqrt
 
-sim_iters = 1       # Number of iterations to run to compute the probability
+sim_iters = 1000000000              # Number of iterations to run to compute the probability
 
 # Set up the parameters for simulation
 n = 1536                            # Codeword/Block Length
 r = 0.5                             # Code rate
 num_message_bits = int(n * r)       # Number of message bits in the block
-max_iters = 1                       # Number of iterations to run the decoder for
+max_iters = 1000                    # Number of iterations to run the decoder for
 
 # Create the encoding parity matrix
 H = create_parity_matrix(n, num_message_bits)   # Generate the encoding and decoding matrices
@@ -62,14 +62,15 @@ for snr, snr_db in zip(snr_linear, snr_db):
             received_encoded_message_block = receive(noisy_signal, extended)
 
             # Step 8: Pass the received message through the LDPC decoder
-            decoded_message, success = belief_propagation_decode(H, received_encoded_message_block, max_iters)
-
+            prob_bit_flip = get_prob_single_bit_flip(snr)
+            decoded_message, success = belief_propagation_decode(H, received_encoded_message_block, prob_bit_flip, max_iters)
+            
             # Step 9: Find the number of bit errors 
             for sent, received in zip(message_block, decoded_message):
                 total_bits += 1
                 if sent != received:
                     bit_errors += 1
-
+        
         error_prob = bit_errors / total_bits
         label = str(mtype[0]) + ':' + str(mtype[1]) + " message (Belief Propagation Decoder)"
-        print(str(snr_db) + ',' + str(error_prob) + ',' + label)
+        print(str(snr_db) + ', ' + str(error_prob) + ',' + label)

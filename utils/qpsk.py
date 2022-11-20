@@ -1,5 +1,5 @@
 import numpy as np
-from math import sqrt
+from math import sqrt, erf
 from random import gauss
 
 # Computes standard deviation from Eb/No (snr) value
@@ -98,3 +98,11 @@ def receive(noisy_signals, extended):
         out_bits = out_bits[1:]
     
     return out_bits
+
+# Represents the q functions
+def Q(x):                                                                                                                                                      
+    return 0.5 - 0.5*erf(x / sqrt(2))
+
+# Computes the probability of a single bit flip
+def get_prob_single_bit_flip(snr):
+    return Q(sqrt(2*snr))

@@ -1,6 +1,8 @@
 import numpy as np
 from random import uniform
 from copy import deepcopy
+from ldpc_tanner import create_tanner_graph
+from math import log, atanh, tanh
 
 # define density to a constant value less than 1
 density = 0.5
@@ -188,6 +190,103 @@ def intersect_decode(H, message, max_iters=1):
     # Extract the message bits and return them
     return list(decoded_message[:message_bits]), success
 
+# Computes the log of the ratio of probability of a bit being 0 and the probability of the bit 1 given that the received bit was br
+def get_log_likelihood(prob_bit_flip, br):
+    prob_of_zero = 1
+    prob_of_one = 1
+    if br == 0:
+        prob_of_zero = 1 -  prob_bit_flip
+        prob_of_one = prob_bit_flip
+    else:
+        prob_of_zero = prob_bit_flip
+        prob_of_one = 1 - prob_bit_flip
+
+    return log(prob_of_zero/prob_of_one)
+
+
 # This decoder tries to decode LDPC encoded message by using belief propagation
-def belief_propagation_decode(H, message, snr, max_iters=1):
-    return fuzzy_decode(H, message, max_iters)
+# Ref: https://www.youtube.com/watch?v=p7x-EOZF5zk
+# Ref: https://www.youtube.com/watch?v=zAQB-jhYWOc
+# Ref: https://yair-mz.medium.com/decoding-ldpc-codes-with-belief-propagation-43c859f4276d
+# Ref: https://mathworld.wolfram.com/InverseHyperbolicTangent.html
+def belief_propagation_decode(H, message, prob_bit_flip, max_iters=1):
+
+    # Tracks whether decoding was successful
+    success = False
+    
+    # Get the tanner graph for the parity matrix
+    check_nodes, variable_nodes, check_neighbourhood, variable_neighbourhood = create_tanner_graph(H)
+
+    # Step 1: Get the number of variable nodes and check nodes
+    num_checks = len(check_nodes)
+    num_vars = len(variable_nodes)
+
+    # Step 2: Create a matrix to store all the variable -> check messages
+    var_to_check_messages = np.zeros((num_vars, num_checks))
+
+    # Step 3: Create a matrix to store all the variable <- check messages
+    check_to_var_messages = np.zeros((num_checks, num_vars))
+
+    # Step 4: Initialize the variable -> check messages
+    for var_node in variable_nodes:
+        for check_node in variable_neighbourhood[var_node]:
+            # Initialize the messages to log likelihoods
+            var_to_check_messages[var_node, check_node] = get_log_likelihood(prob_bit_flip, message[var_node])  
+    
+    # Create a local copy of message and start decoding
+    decoded_message = deepcopy(message)
+    for _ in range(max_iters):
+        
+        # Step 5: Compute variable <- check messages
+        for check_node in check_nodes:
+            for var_node in check_neighbourhood[check_node]:
+
+                # Compute the big multiplication term
+                x = 1
+                for _var_node in check_neighbourhood[check_node]:
+                    if _var_node != var_node:
+                        x *= tanh(var_to_check_messages[_var_node, check_node]/2)       
+                
+                # Compute the variable <- check message
+                check_to_var_messages[check_node, var_node] = 2 * atanh(x)
+
+        # Step 6: Compute the variable -> check messages
+        for var_node in variable_nodes:
+            for check_node in variable_neighbourhood[var_node]:
+                
+                # Compute the big summation term
+                x = 0
+                for _check_node in variable_neighbourhood[var_node]:
+                    if _check_node != check_node:
+                        x += check_to_var_messages[_check_node, var_node]
+
+                # Compute the variable -> check message
+                var_to_check_messages[var_node, check_node] = get_log_likelihood(prob_bit_flip, decoded_message[var_node]) + x
+
+        # Step 7: Make a decision
+        for var_node in variable_nodes:
+            
+            # Compute the total log likelihood
+            L = get_log_likelihood(prob_bit_flip, decoded_message[var_node])
+            for check_node in variable_neighbourhood[var_node]:
+                L += check_to_var_messages[check_node, var_node]
+
+            # Set the bit based on total log likelihood
+            decoded_message[var_node] = 1 if L < 0 else 0
+
+        # Step 8: Check of the message has been decoded
+        failures = mat_vec_mul_mod2(H, decoded_message)
+        failed = False
+        for element in failures:
+            if element == 1:
+                failed = True
+
+        if not failed:
+            success = True
+            break
+    
+    # Compute the number of message bits
+    message_bits = H.shape[1] - H.shape[0]
+    
+    # Extract the message bits and return them
+    return list(decoded_message[:message_bits]), success

@@ -7,13 +7,13 @@ import numpy as np
 import random
 from math import log10, sqrt
 
-sim_iters = 1       # Number of iterations to run to compute the probability
+sim_iters = 1000000000              # Number of iterations to run to compute the probability
 
 # Set up the parameters for simulation
 n = 1536                            # Codeword/Block Length
 r = 0.5                             # Code rate
 num_message_bits = int(n * r)       # Number of message bits in the block
-max_iters = 1                       # Number of iterations to run the decoder for
+max_iters = 1000                    # Number of iterations to run the decoder for
 
 # Create the encoding parity matrix
 H = create_parity_matrix(n, num_message_bits)   # Generate the encoding and decoding matrices
