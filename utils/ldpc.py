@@ -59,7 +59,7 @@ def encode(H, message):
     for i in range(K):
         codeword[i] = message[i]
 
-    # Next part of the codework is computed using parity
+    # Next part of the codeword is computed using parity
     last_parity = 0
     for i in range(N-K):
         codeword_idx = K + i
@@ -71,7 +71,7 @@ def encode(H, message):
         # Now add the parity bit to the code word
         codeword[codeword_idx] = parity
 
-    return codeword
+    return list(codeword)
 
 # Computes matrix vector product modulo two
 def mat_vec_mul_mod2(M, v):
@@ -186,9 +186,8 @@ def intersect_decode(H, message, max_iters=1):
     message_bits = H.shape[1] - H.shape[0]
     
     # Extract the message bits and return them
-    print(decoded_message)
     return list(decoded_message[:message_bits]), success
 
 # This decoder tries to decode LDPC encoded message by using belief propagation
-def belief_propogation_decode(H, message, snr, max_iters=1):
-    pass
+def belief_propagation_decode(H, message, snr, max_iters=1):
+    return fuzzy_decode(H, message, max_iters)
