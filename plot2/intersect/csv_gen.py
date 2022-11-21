@@ -96,7 +96,7 @@ code_rates = [1/2, 2/3, 3/4, 5/6, 7/8]
 jobs = mp.Queue() # Create a job queue for workers
 for snr, snr_db in zip(snr_linear, snr_db):
     for code_rate in code_rates:
-        num_message_bits = n * code_rate
+        num_message_bits = int(n * code_rate)
         jobs.put((snr, snr_db, code_rate, num_message_bits))
 
 # Create a manager for the shared list
