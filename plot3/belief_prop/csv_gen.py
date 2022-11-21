@@ -58,7 +58,7 @@ def get_error_prob(H, snr, snr_db, max_iters, mtype, num_message_bits, sim_iters
                     bit_errors += 1
 
     error_prob = bit_errors / total_bits
-    label = str(mtype[0]) + ':' + str(mtype[1]) + " message (Belief Propagation Decoder)"
+    label = str(max_iters) + " message (Belief Propagation Decoder)"
     output = str(snr_db) + ', ' + str(error_prob) + ',' + label
     return output    
 
