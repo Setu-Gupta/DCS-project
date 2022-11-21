@@ -86,7 +86,7 @@ H = create_parity_matrix(n, num_message_bits)   # Generate the encoding and deco
 
 # Compute the SNR values
 Eb = 1                                      # Assuming unit average bit energy energy
-snr_db = [1 + 0.2*x for x in range(10)]     # Range of SNR values in decibels
+snr_db = [1 + 0.2*x for x in range(11)]     # Range of SNR values in decibels
 snr_linear = [10**(x/10) for x in snr_db]   # Range of SNR values in linear scale
 
 # Set up the sweep parameters
