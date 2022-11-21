@@ -35,19 +35,22 @@ def plot():
     with open(args.csv, 'r') as csv:
         for line in csv.readlines():
             x, y, l = line.split(',')
-            x = float(x.strip())   # Extract the x value
-            y = float(y.strip())    # Extract the y value
+            x_tick = x.strip()[:3]  # Extract the x value
+            y = math.log10(float(y.strip()))    # Extract the y value
             l = l.strip()   # Extract the legend
         
-            if (len(x_vals) == 0) or (len(x_vals) > 0 and x_vals[-1] != x):
-                x_vals.append(x)
-                x_ticks.append(str(x))
-            
+            if(len(x_ticks) == 0):
+                x_ticks.append(x_tick)
+                x_vals.append(0)
+            elif x_ticks[-1] != x_tick:
+                x_vals.append(x_vals[-1] + 1)
+                x_ticks.append(x_tick)
+
             if l not in plots:
                 plots[l] = [y]
             else:
                 plots[l].append(y)
-    
+
     # Plot the graph
     plt.xticks(x_vals, x_ticks)
     for label in plots:

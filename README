@@ -11,3 +11,5 @@ Python3 Dependencies:
         5. Copy
         6. Argparse
         7. Sys
+        8. Multiprocessing
+        9. Queue
