@@ -98,6 +98,7 @@ def fuzzy_decode(H, message, max_iters=1):
 
     # Create a local copy of message and start decoding
     decoded_message = deepcopy(message)
+    previous_message = deepcopy(decoded_message)
     for i in range(max_iters):
 
         # Step 1: Find out which equations are failing
@@ -134,6 +135,20 @@ def fuzzy_decode(H, message, max_iters=1):
         # Step 6: Flip the suspect bit
         decoded_message[suspect] = int(not decoded_message[suspect])
 
+        # Step 7: Exit if the decoded_message is the same as the previous decoded_message
+        same = True
+        for b1, b2 in zip(previous_message, decoded_message):
+            if b1 != b2:
+                same = False
+                break
+
+        # Step 8: If the message did not change, exit out of the loop
+        if same:
+            break
+        
+        # Update the previous message value
+        previous_message = deepcopy(decoded_message)
+
     # Compute the number of message bits
     message_bits = H.shape[1] - H.shape[0]
     
@@ -148,6 +163,7 @@ def intersect_decode(H, message, max_iters=1):
 
     # Create a local copy of message and start decoding
     decoded_message = deepcopy(message)
+    previous_message = deepcopy(decoded_message)
     for i in range(max_iters):
 
         # Step 1: Find out which equations are failing
@@ -183,6 +199,20 @@ def intersect_decode(H, message, max_iters=1):
         # Step 6: Flip the bits which were in all the failed equations
         for idx in failed_bits:
             decoded_message[idx] = int(not decoded_message[idx])
+        
+        # Step 7: Exit if the decoded_message is the same as the previous decoded_message
+        same = True
+        for b1, b2 in zip(previous_message, decoded_message):
+            if b1 != b2:
+                same = False
+                break
+
+        # Step 8: If the message did not change, exit out of the loop
+        if same:
+            break
+        
+        # Update the previous message value
+        previous_message = deepcopy(decoded_message)
 
     # Compute the number of message bits
     message_bits = H.shape[1] - H.shape[0]
