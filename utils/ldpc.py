@@ -275,7 +275,7 @@ def belief_propagation_decode(H, message, prob_bit_flip, max_iters=1):
                 x = 1
                 for _var_node in check_neighbourhood[check_node]:
                     if _var_node != var_node:
-                        x *= tanh(var_to_(check_messages[_var_node, check_node]/2)       
+                        x *= tanh(var_to_check_messages[_var_node, check_node]/2)
                 
                 # Make sure that x is in (-1, 1)
                 if x < -1:
