@@ -13,3 +13,23 @@ Python3 Dependencies:
         7. Sys
         8. Multiprocessing
         9. Queue
+
+How to run:
+        1. Go to the individual plot directories and then select a decoder to run.
+                $ cd plotX/DECODER_CHOICE
+        2. Run the plot generation script
+                $ python3 csv_gen.py <number of threads to use> <output CSV file name>
+                Example: $ python3 csv_gen.py 17 ./out.csv
+
+How to plot the results:
+        1. Go to the plotter script directory
+                $ cd plotter
+        2. Run the plotter script help
+                $ python3 plotter.py -h
+        3. Run with the appropriate arguments to generate a plot
+                Example: $ python3 plotter.py -s ../plot1/belief_prop/out.csv t1 -t belief -x SNR -y log10\(BER\) -l -g
+        Note that an example CSV file and the corresponding plot for it is given in the plotter directory to help you get started.
+        The format of the CSV file is written in plotter.py
+
+The code for plotter, csv generators and utilities is very well documented. Please refer to the python files to get an idea of how the code works.
+NOTE: All the references which inspired to code are mentioned in the comments in the python files
