@@ -280,7 +280,7 @@ def belief_propagation_decode(H, message, prob_bit_flip, max_iters=1):
                         # Make sure that x is in (-1, 1)
                         if x <= -1:
                             x = -0.9999
-                        if x => 1:
+                        if x >= 1:
                             x = 0.9999 
 		
                 # Compute the variable <- check message
