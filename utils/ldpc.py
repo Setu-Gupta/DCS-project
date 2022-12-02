@@ -278,10 +278,10 @@ def belief_propagation_decode(H, message, prob_bit_flip, max_iters=1):
                         x *= tanh(var_to_check_messages[_var_node, check_node]/2)
                 
                         # Make sure that x is in (-1, 1)
-                        if x < -1:
-                            x = -1 + 0.0001 
-                        if x > 1:
-                            x = 1 - 0.0001 
+                        if x <= -1:
+                            x = -0.9999
+                        if x => 1:
+                            x = 0.9999 
 		
                 # Compute the variable <- check message
                 check_to_var_messages[check_node, var_node] = 2 * atanh(x)
