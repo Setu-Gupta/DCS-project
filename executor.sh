@@ -4,6 +4,7 @@ do
         for decoder in ./*
         do
                 cd $decoder;
+                echo "Running $plot/$decoder";
                 python3 csv_gen.py 17 ./out.csv;
                 cd ..;
         done
