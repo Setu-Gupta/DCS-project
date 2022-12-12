@@ -31,5 +31,8 @@ How to plot the results:
         Note that an example CSV file and the corresponding plot for it is given in the plotter directory to help you get started.
         The format of the CSV file is written in plotter.py
 
+How to automate the experiments:
+        Simply run the executor.sh script which will collect all the data automatically.
+
 The code for plotter, csv generators and utilities is very well documented. Please refer to the python files to get an idea of how the code works.
 NOTE: All the references which inspired to code are mentioned in the comments in the python files
