@@ -11,7 +11,7 @@ from math import log10, sqrt
 import multiprocessing as mp
 from queue import Empty
 
-sim_iters = 100	    # Number of iterations to run to compute the probability
+sim_iters = 10  # Number of iterations to run to compute the probability
 
 def get_error_prob(H, snr, snr_db, max_iters, mtype, num_message_bits, sim_iters):
     total_bits = 0
